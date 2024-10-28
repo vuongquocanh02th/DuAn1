@@ -264,7 +264,7 @@ function endGame(){
         localStorage.setItem('highScore', highScore); //Luu diem so cao nhat
     }
     alert(`Game Over! Your score: ${score}`);
-    window.location.href='indexindex.html';
+    window.location.href='index.html';
 }
 
 
