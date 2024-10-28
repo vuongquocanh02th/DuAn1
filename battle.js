@@ -35,8 +35,8 @@ let highScore = localStorage.getItem('highScore') ?
     parseInt(localStorage.getItem('highScore')) : 0;//Diem so cao nhat
 let playerHealth = 100;
 let ghosts = [];
-let ghostHealth = 3000;
-
+let ghostHealth = 300;
+let playerName = new URLSearchParams(window.location.search).get('playerName') || 'UnknownPlayer';
 //Tao ke thu
 function createEnemy() {
     enemies.push({
@@ -54,6 +54,9 @@ function  createGhost() {
         y: 300,
         width: 200,
         height: 200,
+        hitCount: 0, //Dem so lan ban trung ghost
+        isHeadless: false, //Trang thai co bi ban dau hay khong
+        img: ghostImage
     })
 }
 
@@ -73,7 +76,7 @@ function draw() {
     ctx.drawImage(playerImage, player.x, player.y,
         player.width, player.height);
     ghosts.forEach(ghost => {
-        ctx.drawImage(ghostImage, ghost.x, ghost.y,
+        ctx.drawImage(ghost.img, ghost.x, ghost.y,
             ghost.width, ghost.height);
     });
     enemies.forEach(enemy => {
@@ -87,9 +90,11 @@ function draw() {
         ctx.drawImage(bulletImage, bullet.x, bullet.y, 60, 5);
     });
     ctx.fillStyle = 'black';
-    ctx.fillText(`Score: ${score}`, 10, 30);
-    ctx.fillText(`HP: ${playerHealth}`, 10, 60);
-    ctx.fillText(`Highest Score: ${highScore}`, 10, 90);
+    ctx.fillText(`Player: ${playerName}`, 10, 30)
+    ctx.fillText(`Score: ${score}`, 10, 60);
+    ctx.fillText(`HP: ${playerHealth}`, 10, 90);
+    ctx.fillText(`Highest Score: ${highScore}`, 10, 120);
+
 }
 //Ban dan
 function shoot(){
@@ -176,12 +181,18 @@ function updateBullets() {
             && bullet.x + 10 > ghost.x
             && bullet.y < ghost.y + ghost.height
             && bullet.y + 5 > ghost.y) {
-                ghost.x += 5;
-                ghostHealth -= 2;
-                ghostImage.src = 'resource/image/headless-zombie.png';
-                if(ghostHealth <= 0) {
+                player.bullets.splice(index, 1); //Xoa dan
+                if(!ghost.isHeadless){
+                    ghost.isHeadless = true; //Ghost da roi dau
+                    ghost.y += 50;
+                    ghost.img = new Image();
+                    ghost.img.src = 'resource/image/headless-zombie.png';
+                }
+                ghost.hitCount += 1;
+                ghost.x += 10;
+
+                if(ghost.hitCount >=20) {
                     ghosts.splice(ghostIndex, 1); //Xoa ghost
-                    player.bullets.splice(index, 1); //Xoa dan
                     score += 100; //Tang diem khi diet ghost
                 }
             }
@@ -203,12 +214,12 @@ function updateBullets() {
 function updatePlayer() {
 
     if (player.state === 'jumping') {
-        player.y -= 10; // Nhay len
+        player.y -= 1000; // Nhay len
         if (player.y <= 300) {
             player.state = 'standing'; // Tro ve trang thai dung
         }
     } else if (player.state === 'sitting') {
-        player.y = 350; // Vi tri ngoi
+        player.y = 400; // Vi tri ngoi
     } else {
         player.y = 300; // Vi tri dung
     }
@@ -228,7 +239,7 @@ document.addEventListener('keydown', (event) => {
             playerImage.src = 'resource/image/movebackward2.png';
             break;
         case 'ArrowUp':
-            player.y -= 10;
+            player.y -= 1000;
             player.state = 'jumping';
             playerImage.src = 'resource/image/jump.png';
             if (player.y <= 300) {
@@ -263,11 +274,42 @@ function endGame(){
         highScore = score;
         localStorage.setItem('highScore', highScore); //Luu diem so cao nhat
     }
-    alert(`Game Over! Your score: ${score}`);
-    window.location.href='index.html';
+
+    //Luu bang diem
+    let playerScore = JSON.parse(localStorage.getItem('playerScore')) || [];
+    //Kiem tra xem ten nguoi choi da ton tai chua
+    let existingPlayer = playerScore.find( p => p.name === playerName);
+
+    if(existingPlayer) {
+        //Cap nhat diem so neu da ton tai
+        existingPlayer.score = Math.max(existingPlayer.score, score); //Luu diem cao nhat
+    }else {
+        //Neu chua ton tai, them moi
+        playerScore.push({ name: playerName, score: score});
+    }
+
+    playerScore.sort((a, b) => b.score - a.score); // Sap xep cao nhat len dau
+    localStorage.setItem('playerScore', JSON.stringify(playerScore));
+
+    //Hien thi bang diem va chinh sua style
+    let scoreMsg = `Your score: ${score} \n High Score: ${highScore} \n\n Scores:\n`;
+    playerScore.forEach(p => {
+        scoreMsg += `${p.name}: ${p.score}\n`;
+    });
+    document.getElementById('scoreMessage').innerText = scoreMsg;
+
+    //Hien thi Modal va an Canvas
+    document.getElementById('scoreModal').style.display = 'block';
+    canvas.style.display = 'none';
+
 }
+//Xu ly nut OK
+document.getElementById('okBtn').onclick = function() {
+    document.getElementById('scoreModal').style.display = 'none'; //an Modal
+    canvas.style.display = 'block'; //Hien lai canvas neu can
+    window.location.href='index.html';
+};
 
-
-setInterval( createEnemy, 1000 );
-setInterval( createGhost, 900);
+setInterval( createEnemy, 2000 );
+setInterval( createGhost, 2000);
 gameLoop();
