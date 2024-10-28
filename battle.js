@@ -14,14 +14,14 @@ playerImage.src = 'resource/image/Player.png';
 bulletImage.src = 'resource/image/bullet.png';
 enemyImage.src = 'resource/image/Enemy.png';
 enemyBulletImage.src = 'resource/image/enemy-bullet.png';
-backgroundImage.src = 'resource/image/war.png';
+backgroundImage.src = 'resource/image/bg.png';
 ghostImage.src = 'resource/image/ghost.png';
 //Cac bien game
 let player = {
     x: 100,
-    y: 400,
-    width: 100,
-    height: 100,
+    y: 600,
+    width: 190,
+    height: 190,
     state: ['standing','jumping','sitting','forward','backward'],
     bullets:[]
 };
@@ -41,9 +41,9 @@ let ghostHealth = 3000;
 function createEnemy() {
     enemies.push({
         x: canvas.width - 50,
-        y: 400,
-        width: 100,
-        height: 100,
+        y: 300,
+        width: 190,
+        height: 190,
         bullets: []
     });
 }
@@ -94,7 +94,7 @@ function draw() {
 //Ban dan
 function shoot(){
     player.bullets.push( {x: player.x + player.width,
-            y: player.y + player.height - 55} );
+            y: player.y + player.height - 100} );
 }
 
 
@@ -105,7 +105,7 @@ function update() {
     enemies.forEach(enemy => {
         enemy.x -= 3;
         if (Math.random() < 0.02) { //Ke thu co kha nang ban
-            enemy.bullets.push({x: enemy.x, y: enemy.y + 35})
+            enemy.bullets.push({x: enemy.x, y: enemy.y + 70})
         }
     });
     //cap nhat ghost
@@ -154,7 +154,7 @@ function checkCollision() {
 
 function updateBullets() {
     player.bullets.forEach((bullet, index) => {
-        bullet.x += 20; //Di chuyen dan
+        bullet.x += 50; //Di chuyen dan
         //Xoa dan khi ra khoi man hinh
         if (bullet.x > canvas.width) {
             player.bullets.splice(index, 1);
@@ -175,7 +175,7 @@ function updateBullets() {
             if (bullet.x < ghost.x + ghost.width
             && bullet.x + 10 > ghost.x
             && bullet.y < ghost.y + ghost.height
-            && bullet.y + 10 > ghost.y) {
+            && bullet.y + 5 > ghost.y) {
                 ghost.x += 5;
                 ghostHealth -= 2;
                 ghostImage.src = 'resource/image/headless-zombie.png';
@@ -191,7 +191,7 @@ function updateBullets() {
     //Cap nhat dan cua ke thu
     enemies.forEach(enemy => {
         enemy.bullets.forEach((bullet, index) => {
-            bullet.x -= 10; //Di chuyen dan
+            bullet.x -= 50; //Di chuyen dan
             if (bullet.x < 0) {
                 enemy.bullets.splice(index, 1);//Xoa dan khi ra khoi man hinh
             }
@@ -208,9 +208,9 @@ function updatePlayer() {
             player.state = 'standing'; // Tro ve trang thai dung
         }
     } else if (player.state === 'sitting') {
-        player.y = 440; // Vi tri ngoi
+        player.y = 350; // Vi tri ngoi
     } else {
-        player.y = 400; // Vi tri dung
+        player.y = 300; // Vi tri dung
     }
 }
 
@@ -236,7 +236,7 @@ document.addEventListener('keydown', (event) => {
             }
             break;
         case 'ArrowDown':
-            player.y = 420;
+            player.y = 460;
             player.state = 'sitting';
             playerImage.src = 'resource/image/sit.png';
             break;
@@ -254,7 +254,7 @@ function gameLoop() {
 }
 
 document.getElementById('backToMenuButton').onclick = function() {
-    window.location.href = 'war.html'; // Quay lại menu chính
+    window.location.href = 'index.html'; // Quay lại menu chính
 };
 
 //Xu ly endgame
@@ -264,7 +264,7 @@ function endGame(){
         localStorage.setItem('highScore', highScore); //Luu diem so cao nhat
     }
     alert(`Game Over! Your score: ${score}`);
-    window.location.href='war.html';
+    window.location.href='indexindex.html';
 }
 
 
